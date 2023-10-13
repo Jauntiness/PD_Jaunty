@@ -1,4 +1,9 @@
 # RDErrortest.py
+
+# originally posted by "Majestyck" on Discord
+# https://discord.com/channels/1021692389368283158/1155806221408931881/1156150014096191528
+
+
 import requests
 import time
 #import settings 
