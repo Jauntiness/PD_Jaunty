@@ -21,7 +21,7 @@ PD_Jaunty allows you to create separate libraries for each of your Plex users, f
    - The automation can also create an `ignored.txt` file, which can be linked in plex_debrid. It includes movies, shows, or seasons that have been watched by all users and do not need to be readded by plex_debrid. This is essential when using the PD_Jaunty Library Cleanup feature.
    - Additionally, you can add specific titles to a list in the settings that will always be included in all libraries.
 
-3. **Creating `ignore.txt`**
+3. **Creating `ignored.txt`**
    - If needed, you can manually create an `ignore.txt` file without using the automation. Alternatively, the automation will do this for you for all changes recognized.
 
 4. **Error Checker**
