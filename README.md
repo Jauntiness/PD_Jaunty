@@ -22,13 +22,13 @@ PD_Jaunty allows you to create separate libraries for each of your Plex users, f
    - Additionally, you can add specific titles to a list in the settings that will always be included in all libraries.
 
 3. **Creating `ignored.txt`**
-   - If needed, you can manually create an `ignore.txt` file without using the automation. Alternatively, the automation will do this for you for all changes recognized.
+   - If needed, you can manually create an `ignored.txt` file without using the automation. Alternatively, the automation will do this for you for all changes recognized.
 
 4. **Error Checker**
    - This error-checking feature was originally posted by "Majestyck" on Discord [Link](https://discord.com/channels/1021692389368283158/1155806221408931881/1156150014096191528).
    - Have you ever experienced a library scan taking forever and seeming to hang at a specific file you can't find? Sometimes, files or links can become corrupt on Real Debrid. The Error Checker slowly checks all files for errors and lists them, making it easier to locate and remove problematic files.
 
 5. **Library Cleanup**
-   - As you may recall, the PD_Jaunty automation creates an `ignore.txt` file containing movies, shows, or seasons that have been watched by all users. These files are no longer needed and can be removed to make your Real Debrid library more lightweight.
+   - As you may recall, the PD_Jaunty automation creates an `ignored.txt` file containing movies, shows, or seasons that have been watched by all users. These files are no longer needed and can be removed to make your Real Debrid library more lightweight.
    - When performing this cleanup, ensure that you have set up the `ignored.txt` file in plex_debrid. Failing to do so will result in all movies and shows being re-added by plex_debrid.
    - Always use the dry-run option first, as errors during this process could potentially lead to the deletion of your entire library.
