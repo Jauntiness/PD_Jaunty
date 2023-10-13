@@ -1,8 +1,10 @@
 # PD_Jaunty
 *Tested on Windows only*
 
-PD_Jaunty is an add-on for the excellent plex_debrid tool by iTsToggle:
+PD_Jaunty is an add-on for the great plex_debrid tool by iTsToggle:
 [GitHub Repository](https://github.com/itsToggle/plex_debrid)
+
+No plex pass needed
 
 ## Overview
 PD_Jaunty allows you to create separate libraries for each of your Plex users, filtering only the content they have added to their watchlists and have not yet watched. This can be achieved without the need for a Plex Pass.
