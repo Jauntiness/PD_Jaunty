@@ -38,10 +38,10 @@ def welcome():
     print("You can change your settings and add more users in the settings.py .")
     print("")
     print("What are we doing next?")
-    print("1 Running automation for all users.")
-    print("2 Creating ignore.txt .")
-    print("3 Checking links on Real Debrid for errors.")
-    print("4 Cleaning Debrid library of all no longer needed files.")
+    print("1 PD_Jaunty automation:      Running PD_Jaunty automation for all users.")
+    print("2 Ignore.txt creator:        Creating ignore.txt .")
+    print("3 Error checker:             Checking links on Real Debrid for errors.")
+    print("4 PD_Jautny Library-Cleanup :Cleans your library of all no longer needed files.")
 
     x = None  # Reset x to None before waiting for input
 
@@ -80,7 +80,7 @@ def get_user_input():
 def handle_user_choice():
     if x == '1':
         clear_terminal()
-        print("Start: Running automation.")
+        print("Start: PD_Jaunty automation.")
         print("")
         print("")
         automation()
