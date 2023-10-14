@@ -137,13 +137,13 @@ def refresh_library():
 
     # Check if enough time has passed since the last request
     current_time = time.time()
-    if current_time - last_request_time < 30:
+    if current_time - last_request_time < (30 + scan_offset):
         updatetimestamp()
         print(timestamp + "       : Skipping Plex library refresh (recently refreshed).")
     else:
         last_request_time = current_time
         # Delay for 10 seconds
-        time.sleep(10)
+        time.sleep(scan_offset)
         # Refresh Plex library
         url = "http://localhost:32400/library/sections/all/refresh"
         token = tokenhost
@@ -156,6 +156,8 @@ def refresh_library():
         else:
             updatetimestamp()
             print(timestamp + f" Failed to update Plex library. Status code: {response.status_code}")
+
+        # Update the last request time
 
 
         
