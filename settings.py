@@ -55,8 +55,8 @@ dummy_file = [
 
 
 #optional
-## The offset time in seconds until a refresh library signal will be sent to the plex server. Standard "refresh_offset = 30"
-refresh_offset = 30
+## The offset time in seconds until a scan library signal will be sent to the plex server. Standard "scan_offset = 30"
+scan_offset = 30
 
 
 
