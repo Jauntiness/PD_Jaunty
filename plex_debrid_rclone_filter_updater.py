@@ -2,7 +2,7 @@
 import os
 import plex
 import settings
-from settings import sources, destination, dircachetime, dircachetimesetting, vfscachemode, vfscachemodesetting, buffersize, buffersizesetting, tokenhost, users, intervall
+from settings import scan_offset, sources, destination, dircachetime, dircachetimesetting, vfscachemode, vfscachemodesetting, buffersize, buffersizesetting, tokenhost, users, intervall
 import schedule
 import datetime
 import threading, random
@@ -15,7 +15,7 @@ def updatetimestamp():
     timestamp = ('[' + str(datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")) + '] ')
 
 # Create a dictionary to hold subprocesses for each user
-rclone_processes = {}  
+rclone_processes = {}  # Dictionary to store subprocesses
 
 def startrclone(user):
     global rclone_processes
@@ -158,8 +158,6 @@ def refresh_library():
             print(timestamp + f" Failed to update Plex library. Status code: {response.status_code}")
 
         # Update the last request time
-
-
         
 
 def updateprocess(plex_library, user):
@@ -201,6 +199,9 @@ def run_user_operations(user):
     print(timestamp, "Start : creation of ",f"{username}-filter.txt", " and run rclone.")
     # Create a PlexLibrary instance for the current user
     plex_library = plex.PlexLibrary([user])
+
+    ## Start the rclone mount for the current user
+    #startrclone(user)
 
     updateprocess(plex_library, user)
     print(timestamp+" End   : creation of ",f"{username}-filter.txt")
