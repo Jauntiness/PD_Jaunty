@@ -12,8 +12,9 @@ users = [
     {'username': 'User5', 'token': 'TokenNumber123'},
     # Add more users as needed
     # if you add 1080p to the username it will start rclone filtering out everything bigger than 1080p
-    # find tokens by visiting by logging into plex.tv, then visit:
-    # first https://plex.tv/devices and then https://plex.tv/devices.xml
+    # find tokens by logging into plex.tv, then visit:
+    # first https://plex.tv/devices 
+    # and then https://plex.tv/devices.xml
 ]
 
 
