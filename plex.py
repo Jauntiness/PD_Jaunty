@@ -561,8 +561,8 @@ def main():
     #print_different_watchlists(plex_library)
 
     ## create the user lists using create_ignored_watched_list function [can also be used without specifing usernames, then all users are used]
-    #ignored_watched_user_lists = create_ignored_watched_list(plex_library, usernames=['Pikachu', 'Demo_Halle'])
-    #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library, usernames=['Pikachu', 'Demo_Halle'])
+    #ignored_watched_user_lists = create_ignored_watched_list(plex_library, usernames=['user1', 'user2'])
+    #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library, usernames=['user1', 'user2'])
     #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library)
 
     ## Then, print the user lists using the print_user_lists function
