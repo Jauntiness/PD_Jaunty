@@ -216,11 +216,14 @@ class PlexLibrary:
                 is_show = True
 
             if is_movie:
-                view_count = int(movie_data.get('viewCount', 0))
-                if view_count == 0:
-                    unwatched_movies.append(title)
-                else:
-                    watched_movies.append(title)
+                #view_count = int(movie_data.get('viewCount', 0))
+                video_element = movie_data.find('.//Video')
+                if video_element is not None:
+                    view_count = int(video_element.get('viewCount', 0))
+                    if view_count == 0:
+                        unwatched_movies.append(title)
+                    else:
+                        watched_movies.append(title)
 
             if is_show:
                 # Fetch season data for shows
