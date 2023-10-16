@@ -44,6 +44,8 @@ def clean_name_with_year(name):
     # Remove special characters and spaces, convert to lowercase
     #cleaned_name = re.sub(r'[^a-zA-Z0-9]+', '.', name).strip('.').lower()
     cleaned_name = re.sub(r' ', '.', name)
+    cleaned_name = re.sub(r':', '.', cleaned_name)
+    cleaned_name = re.sub(r'\.+', '.', cleaned_name)
     cleaned_name = cleaned_name.lower()
     # Remove year numbers at the end (if they exist)
     #cleaned_name = re.sub(r'(?:^|\D)(21|20|19)\d{2}(?!\d)', '', cleaned_name)
@@ -574,6 +576,7 @@ def create_only_watched_not_unwatched_all_users(plex_library):
         unwatchedlist.update(unwatched_movies + unwatched_movies_with_year + unwatched_shows + unwatched_shows_seasons)
 
 
+
     
     # Create a set of titles that are only in the watchedlist (subtract unwatchedlist)
     only_watched_not_unwatched_all_users = watchedlist - unwatchedlist
@@ -613,7 +616,7 @@ def main():
     # Collect titles and rating keys
     plex_library.collect_titles_and_rating_keys()
     
-    #create_only_watched_not_unwatched_all_users(plex_library)
+    create_only_watched_not_unwatched_all_users(plex_library)
 
     ### Functions:
     #print_different_watchlists(plex_library)
