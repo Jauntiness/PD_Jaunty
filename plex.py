@@ -40,6 +40,18 @@ def clean_name(name):
     cleaned_name = re.sub(r'series\.(\d+)', lambda x: f"s{x.group(1).zfill(2)}.", cleaned_name)
     return cleaned_name
 
+def clean_name_with_year(name):
+    # Remove special characters and spaces, convert to lowercase
+    cleaned_name = re.sub(r'[^a-zA-Z0-9]+', '.', name).strip('.').lower()
+    # Remove year numbers at the end (if they exist)
+    #cleaned_name = re.sub(r'(?:^|\D)(21|20|19)\d{2}(?!\d)', '', cleaned_name)
+    # Remove trailing dots
+    cleaned_name = cleaned_name.rstrip('.')
+    # Adjust season numbers to 's01', 's02', etc.
+    cleaned_name = re.sub(r'season\.(\d+)', lambda x: f"s{x.group(1).zfill(2)}.", cleaned_name)
+    cleaned_name = re.sub(r'series\.(\d+)', lambda x: f"s{x.group(1).zfill(2)}.", cleaned_name)
+    return cleaned_name
+
 def clean_name_rclonefilter(name):
     #cleaned_name = clean_name(name)
     # Remove special characters and spaces, convert to lowercase
@@ -383,6 +395,7 @@ class PlexLibrary:
                         title, rating_key, user_token,
                         watched_movies, unwatched_movies, watched_shows, unwatched_shows, watched_shows_seasons, unwatched_shows_seasons
                     )
+            #print(unwatched_movies)
         return watched_movies, unwatched_movies, watched_shows, unwatched_shows, watched_shows_seasons, unwatched_shows_seasons
     
     def update_watched_lists(self):
@@ -528,19 +541,51 @@ def create_only_watched_not_unwatched_all_users(plex_library):
             unwatched_shows_seasons
         ) = plex_library.check_watched_parallel_for_user(username)
 
+
+
+        
+
+
+        #print(unwatched_movies)
+        user_token = plex_library.get_user_token(username)
+        watched_movies_years = get_movie_years(watched_movies, user_token, plex_library)
+        watched_movies = [
+                f'{title} {year}' for title, year in zip(watched_movies, watched_movies_years)
+            ]
+        unwatched_movies_years = get_movie_years(unwatched_movies, user_token, plex_library)
+        unwatched_movies = [
+                f'{title} {year}' for title, year in zip(unwatched_movies, unwatched_movies_years)
+            ]
+        
+        watched_movies = [clean_name_with_year(name) for name in watched_movies]
+        unwatched_movies = [clean_name_with_year(name) for name in unwatched_movies]
+        watched_shows = [clean_name(name) for name in watched_shows]
+        unwatched_shows = [clean_name(name) for name in unwatched_shows]
+        watched_shows_seasons = [clean_name(name) for name in watched_shows_seasons]
+        unwatched_shows_seasons  = [clean_name(name) for name in unwatched_shows_seasons]
+
+        
         watchedlist.update(watched_movies + watched_shows + watched_shows_seasons)
         unwatchedlist.update(unwatched_movies + unwatched_shows + unwatched_shows_seasons)
 
+
+    
     # Create a set of titles that are only in the watchedlist (subtract unwatchedlist)
     only_watched_not_unwatched_all_users = watchedlist - unwatchedlist
+    print(only_watched_not_unwatched_all_users)
+
+
+    
+    
 
     # Clean the names using clean_name() and convert to a list
-    cleaned_only_watched_not_unwatched_all_users = [clean_name(name) for name in only_watched_not_unwatched_all_users]
+    #cleaned_only_watched_not_unwatched_all_users = [clean_name(name) for name in only_watched_not_unwatched_all_users]
 
     # Sort the cleaned titles alphabetically
-    cleaned_only_watched_not_unwatched_all_users.sort()
+    #cleaned_only_watched_not_unwatched_all_users.sort()
 
-    return cleaned_only_watched_not_unwatched_all_users
+    #return cleaned_only_watched_not_unwatched_all_users
+    return only_watched_not_unwatched_all_users
 
 
 def print_user_lists(user_lists):
@@ -559,13 +604,15 @@ def main():
 
     # Collect titles and rating keys
     plex_library.collect_titles_and_rating_keys()
+    
+    #create_only_watched_not_unwatched_all_users(plex_library)
 
     ### Functions:
     #print_different_watchlists(plex_library)
 
     ## create the user lists using create_ignored_watched_list function [can also be used without specifing usernames, then all users are used]
-    #ignored_watched_user_lists = create_ignored_watched_list(plex_library, usernames=['user1', 'user2'])
-    #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library, usernames=['user1', 'user2'])
+    #ignored_watched_user_lists = create_ignored_watched_list(plex_library, usernames=['Pikachu', 'Demo_Halle'])
+    #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library, usernames=['Pikachu', 'Demo_Halle'])
     #unwatched_rclonefilter_user_lists = create_unwatched_list_rclonefilter(plex_library)
 
     ## Then, print the user lists using the print_user_lists function
