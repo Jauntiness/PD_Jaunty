@@ -252,6 +252,8 @@ def automation():
     first_iteration = True  # Flag to track the first iteration
     # Call the check_user_tokens function to validate user tokens
     check_user_tokens(users)
+
+    night_refresh_done = 0
   
 
     ## running a main mount, for being able to access all files
@@ -289,10 +291,14 @@ def automation():
                     previous_titles[user['username']] = set(current_titles)
 
             first_iteration = False  # Update the flag
-            
-        elif dt.datetime.now().hour == 3:
+        
+
+        if dt.datetime.now().hour == 2 and night_refresh_done == 1:
+            night_refresh_done = 0
+        if dt.datetime.now().hour == 3 and night_refresh_done == 0:
             for user in users:
                 plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
+            night_refresh_done = 1
 
         else:
             for user in users:
