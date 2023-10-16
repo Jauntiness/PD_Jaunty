@@ -547,7 +547,7 @@ def create_only_watched_not_unwatched_all_users(plex_library):
 
 
         #print(unwatched_movies)
-                user_token = plex_library.get_user_token(username)
+        user_token = plex_library.get_user_token(username)
 
         watched_movies_years = get_movie_years(watched_movies, user_token, plex_library)
         watched_movies_with_year = [
