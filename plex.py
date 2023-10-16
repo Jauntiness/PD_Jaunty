@@ -42,7 +42,9 @@ def clean_name(name):
 
 def clean_name_with_year(name):
     # Remove special characters and spaces, convert to lowercase
-    cleaned_name = re.sub(r'[^a-zA-Z0-9]+', '.', name).strip('.').lower()
+    #cleaned_name = re.sub(r'[^a-zA-Z0-9]+', '.', name).strip('.').lower()
+    cleaned_name = re.sub(r' ', '.', name)
+    cleaned_name = cleaned_name.lower()
     # Remove year numbers at the end (if they exist)
     #cleaned_name = re.sub(r'(?:^|\D)(21|20|19)\d{2}(?!\d)', '', cleaned_name)
     # Remove trailing dots
