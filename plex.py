@@ -572,8 +572,9 @@ def create_only_watched_not_unwatched_all_users(plex_library):
     
     # Create a set of titles that are only in the watchedlist (subtract unwatchedlist)
     only_watched_not_unwatched_all_users = watchedlist - unwatchedlist
-    #print(only_watched_not_unwatched_all_users)
-    only_watched_not_unwatched_all_users = [name for name in only_watched_not_unwatched_all_users]
+    only_watched_not_unwatched_all_users = list(only_watched_not_unwatched_all_users)
+
+    #only_watched_not_unwatched_all_users = [name for name in only_watched_not_unwatched_all_users]
 
 
     
@@ -584,6 +585,7 @@ def create_only_watched_not_unwatched_all_users(plex_library):
 
     # Sort the cleaned titles alphabetically
     #cleaned_only_watched_not_unwatched_all_users.sort()
+    only_watched_not_unwatched_all_users.sort()
 
     #return cleaned_only_watched_not_unwatched_all_users
     return only_watched_not_unwatched_all_users
