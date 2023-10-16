@@ -548,18 +548,21 @@ def create_only_watched_not_unwatched_all_users(plex_library):
 
         #print(unwatched_movies)
         user_token = plex_library.get_user_token(username)
+
         watched_movies_years = get_movie_years(watched_movies, user_token, plex_library)
-        watched_movies = [
+        watched_movies_with_year = [
                 f'{title} {year}' for title, year in zip(watched_movies, watched_movies_years)
             ]
+        
         unwatched_movies_years = get_movie_years(unwatched_movies, user_token, plex_library)
-        unwatched_movies = [
+        unwatched_movies_with_year = [
                 f'{title} {year}' for title, year in zip(unwatched_movies, unwatched_movies_years)
             ]
+        
         watched_movies = [clean_name(name) for name in watched_movies]
         unwatched_movies = [clean_name(name) for name in unwatched_movies]
-        watched_movies_years = [clean_name_with_year(name) for name in watched_movies_years]
-        unwatched_movies_years = [clean_name_with_year(name) for name in unwatched_movies_years]
+        watched_movies_with_year = [clean_name_with_year(name) for name in watched_movies_with_year]
+        unwatched_movies_with_year = [clean_name_with_year(name) for name in unwatched_movies_with_year]
         watched_shows = [clean_name(name) for name in watched_shows]
         unwatched_shows = [clean_name(name) for name in unwatched_shows]
         watched_shows_seasons = [clean_name(name) for name in watched_shows_seasons]
