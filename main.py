@@ -269,6 +269,14 @@ def automation():
 
     while True:
 
+        if dt.datetime.now().hour == 2 and night_refresh_done == 1:
+            night_refresh_done = 0
+        if dt.datetime.now().hour == 3 and night_refresh_done == 0:
+            for user in users:
+                plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
+            night_refresh_done = 1
+
+
         if first_iteration:
             write_ignored.main()
             for user in users:
@@ -292,13 +300,6 @@ def automation():
 
             first_iteration = False  # Update the flag
         
-
-        if dt.datetime.now().hour == 2 and night_refresh_done == 1:
-            night_refresh_done = 0
-        if dt.datetime.now().hour == 3 and night_refresh_done == 0:
-            for user in users:
-                plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
-            night_refresh_done = 1
 
         else:
             for user in users:
