@@ -208,7 +208,7 @@ def watching_check_thread(user):
         if result:
             watching_check_threads[username]['watching_check_done'] = True
             #print("watching check threads is true now")
-            write_ignored.main()
+            #write_ignored.main()
             plex_debrid_rclone_filter_updater.main(user)
             break
         else:
