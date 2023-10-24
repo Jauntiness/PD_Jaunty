@@ -1,350 +1,228 @@
-# main.py
-import threading
-import datetime as dt
-import time
-import schedule
+# plex_debrid_rclone_filter_updater.py
 import os
-import requests
-
 import plex
 import settings
-from settings import intervall, autostart, output_directory
-import write_ignored
-import plex_debrid_rclone_filter_updater
-import check_for_changes
-import rclone_mainmount
-import RDErrortest
-import deleter_rclone
+from settings import scan_offset, sources, destination, dircachetime, dircachetimesetting, vfscachemode, vfscachemodesetting, buffersize, buffersizesetting, tokenhost, users, intervall
+import schedule
+import datetime
+import threading, random
+import time
+import requests
 import watching_check
+result = None
+def updatetimestamp():
+    global timestamp
+    timestamp = ('[' + str(datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")) + '] ')
 
+# Create a dictionary to hold subprocesses for each user
+rclone_processes = {}  # Dictionary to store subprocesses
 
+def startrclone(user):
+    global rclone_processes
+    import subprocess
+    username = user["username"]
 
-version = "1.0"
-users = settings.users
-plex_library = plex.PlexLibrary(users)
-runned_check = None
+    try:
+        for source_info in sources:
+            source_name = source_info['source_name']
+            source = source_info['source']
+            
+            # Construct the destination path based on the username and source_name
+            user_destination = f'C:\\User-Cloud\\{username}-{source_name}'
+            
+            command = (["rclone", "mount", source, user_destination, dircachetime, dircachetimesetting, vfscachemode, vfscachemodesetting, buffersize, buffersizesetting, "--ignore-case", "--filter-from", f"{username}-filter.txt"])
+            
+            result = subprocess.Popen(command, stderr=subprocess.DEVNULL)
+            
+            # Store the subprocess in the dictionary
+            rclone_processes[f"{username}_{source_name}"] = result
 
-global x
-x = None
+    except Exception as e:
+        print("Error rclone:", str(e))
 
-def clear_terminal():
-    os.system('cls' if os.name == 'nt' else 'clear')
+def terminaterclone(username):
+    global rclone_processes
+    try:
+        for source_info in sources:
+            source_name = source_info['source_name']
+            process_key = f"{username}_{source_name}"
+            if process_key in rclone_processes:
+                result = rclone_processes[process_key]
+                result.terminate()
+                result.wait()
+                # Remove the subprocess from the dictionary
+                del rclone_processes[process_key]
+    except Exception as e:
+        print(f"Error stopping rclone for user {username}: {e}")
 
-def welcome():
-    global x
-    global runned_check
-    print("Welcome to PD_Jaunty. Version: "+version )
-    print("")
-    print("You can change your settings and add more users in the settings.py .")
-    print("")
-    print("What are we doing next?")
-    print("1 PD_Jaunty automation:      Running PD_Jaunty automation for all users.")
-    print("2 Ignore.txt creator:        Creating ignore.txt .")
-    print("3 Error checker:             Checking links on Real Debrid for errors.")
-    print("4 PD_Jautny Library-Cleanup :Cleans your library of all no longer needed files.")
+## random messages which are populated per hour, to show the tool is still working.
+random_messages = [
+    "Still updating every {} seconds.",
+    "I am still here, working as a donkey.",
+    "Are you still checking in?",
+    "Short update from me.",
+    "When my son told me to stop impersonating a flamingo, I had to put my foot down.",
+    "Random bullshit",
+    "Just that you know the current time.",
+    "Thanks for checking in on me.",
+    "Bee Boo Bipp",
+    "How are you?",
+        "Why don't scientists trust atoms? Because they make up everything!",
+    "Did you hear about the mathematician who's afraid of negative numbers? He'll stop at nothing to avoid them.",
+    "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+    "Parallel lines have so much in common. It's a shame they'll never meet.",
+    "Why did the scarecrow win an award? Because he was outstanding in his field.",
+    "I used to play piano by ear, but now I use my hands.",
+    "I'm writing a book on reverse psychology. Please don't buy it.",
+    "I'm reading a book on anti-gravity. It's impossible to put down.",
+    "I'm friends with all electricians. We have such great current connections.",
+    "Why did the tomato turn red? Because it saw the salad dressing!",
+    "How do you organize a space party? You planet!",
+    "Why couldn't the bicycle stand up by itself? It was two tired.",
+    "I'm on a seafood diet. I see food and I eat it.",
+    "I couldn't figure out why my computer was so slow. Then I realized it couldn't run.",
+    "I don't trust stairs because they're always up to something.",
+    "What did one wall say to the other wall? 'I'll meet you at the corner!'",
+    "How does a penguin build its house? Igloos it together!",
+    "What do you call a bear with no teeth? A gummy bear!",
+    "Why was the math book sad? It had too many problems.",
+]
 
-    x = None  # Reset x to None before waiting for input
+def printit_hello():
+    time.sleep(1800)
+    updatetimestamp()
 
-    if runned_check is None and autostart == True:
-        # Create a thread to handle user input
-        input_thread = threading.Thread(target=get_user_input)
-        input_thread.daemon = True
-        input_thread.start()
-
-        # Wait for user input or timeout
-        input_thread.join(timeout=60)
-
-        if x is None and runned_check is None and autostart == True:
-            clear_terminal()
-            print("No input received for 60 seconds. Starting automation.")
-            print("")
-            print("")
-            print("Start: Running automation.")
-            print("")
-            print("")
-            automation()
-        else:
-            #get_user_input()
-            clear_terminal()
-            handle_user_choice()
+    if random.random() < 0.75:
+        random_message = "Still updating every {} seconds.".format(intervall)
     else:
-        get_user_input()
-        handle_user_choice()
-
-
-def get_user_input():
-    global x
-    user_input = input()
-    x = user_input
-
-def handle_user_choice():
-    if x == '1':
-        clear_terminal()
-        print("Start: PD_Jaunty automation.")
-        print("")
-        print("")
-        automation()
-    elif x == '2':
-        clear_terminal()
-        print("Start: creating ignore.txt .")
-        print("")
-        print("")
-        if not output_directory or output_directory == []:
-            print("No directory for the ignore.txt found.")
-            print("Please check your user settings.")
-            welcome()
-        else:
-            write_ignored.main()
-    elif x == '3':
-        clear_terminal()
-        print("Start: Checking links on Real Debrid for errors.")
-        print("")
-        print("")
-        RDErrortest.main()
-    elif x == '4':
-        clear_terminal()
-        print("Start: Cleaning Debrid library of all no longer needed files.")
-        print("")
-        print("")
-        deleter_rclone.main()
-    else:
-        clear_terminal()
-        print("No choice I can recognize. Please choose one of the options from the list.")
-        print("Starting again")
-        print("")
-        print("")
-        welcome()
-
-def start_printit_hello_thread():
-    #time.sleep(3600)
+        random_message = random.choice(random_messages)
     
-    thread = threading.Thread(target=plex_debrid_rclone_filter_updater.printit_hello)
-    thread.daemon = True  # Daemonize the thread to exit when the main program exits
+    timestamp_message = "{}{}".format(timestamp, random_message)
+    
+    print(timestamp_message)
+    threading.Timer(1800, printit_hello).start()
+
+def updatefilterlistonlyunwatched(plex_library, user):
+    try:
+        username = user["username"]
+        updatetimestamp()
+        plex_library.collect_titles_and_rating_keys()
+        unwatched_rclonefilter_user_lists = plex.create_unwatched_list_rclonefilter(plex_library)
+        outputlist = unwatched_rclonefilter_user_lists
+        
+        # Open the file for writing
+        with open(f"{username}-filter.txt", 'w') as f:
+            # Iterate through the keys and values in the dictionary
+            for key, value_list in outputlist.items():
+                # Write the key (username) preceded by "#" and followed by a colon
+                f.write(f"# {key}:\n")
+
+        
+                # Write each item in the list, one item per line
+                for index, item in enumerate(value_list):
+                    if index == 0:
+                        f.write(f"# {item}\n")  # Add "#" only to the first item
+                    else:
+                        f.write(f"{item}\n")
+
+        updatetimestamp()
+        print(timestamp + "       : "+ f"{username}-filter.txt" + " updated and created.")
+    except Exception as e:
+        print(f"An error occurred while updating filter list for user {user['username']}: {str(e)}")
+
+
+last_request_time = 0
+def refresh_library():
+    global last_request_time
+
+    # Check if enough time has passed since the last request
+    current_time = time.time()
+    if current_time - last_request_time < (30 + scan_offset):
+        updatetimestamp()
+        print(timestamp + "       : Skipping Plex library refresh (recently refreshed).")
+    else:
+        last_request_time = current_time
+        # Delay for 10 seconds
+        time.sleep(scan_offset)
+        # Refresh Plex library
+        url = "http://localhost:32400/library/sections/all/refresh"
+        token = tokenhost
+        complete_url = f"{url}?X-Plex-Token={token}"
+        response = requests.get(complete_url)
+
+        if response.status_code == 200:
+            updatetimestamp()
+            print(timestamp + "       :" + " Plex library refresh request was successful.")
+        else:
+            updatetimestamp()
+            print(timestamp + f" Failed to update Plex library. Status code: {response.status_code}")
+
+        # Update the last request time
+        
+
+def updateprocess(plex_library, user):
+    username = user["username"]
+    #print(timestamp + "       : "+"Changes in watchlist detected, updating", f"{username}-filter.txt", "and restarting rclone")
+    updatefilterlistonlyunwatched(plex_library, user)
+    #watching_check.check_current_watching_sessions(user)
+    terminaterclone(username)
+    startrclone(user)
+    updatetimestamp()
+    print(timestamp + "       :"+" Rclone restarted for "+ f"{username}")
+
+    # Create a thread for library refresh
+    refresh_thread = threading.Thread(target=refresh_library)
+    refresh_thread.start()
+
+
+
+
+
+def hardupdatefilterlist(user):
+    username = user["username"]
+    plex_library = plex.PlexLibrary(users)
+    updatetimestamp()
+    print(timestamp, "Nightly hard-refresh of filterlist for User: ", username)
+    print("This also removes watched movies and shows if not already happened.")
+    try:
+        main(user)
+    except Exception:
+        print("Update process failed, repeating in 90 seconds.")
+        time.sleep(90)
+        hardupdatefilterlist(user)
+        
+
+
+def run_user_operations(user):
+    username = user["username"]
+    updatetimestamp()
+    print(timestamp, "Start : creation of ",f"{username}-filter.txt", " and run rclone.")
+    # Create a PlexLibrary instance for the current user
+    plex_library = plex.PlexLibrary([user])
+
+    ## Start the rclone mount for the current user
+    #startrclone(user)
+
+    updateprocess(plex_library, user)
+    print(timestamp+" End   : creation of ",f"{username}-filter.txt")
+    #schedule.every().day.at("03:00").do(hardupdatefilterlist, user)
+
+
+
+def main(user):
+
+    # Create a list to hold the thread objects
+    threads = []
+
+    # Create and start a thread for each user
+    
+    thread = threading.Thread(target=run_user_operations, args=(user,))
     thread.start()
+    threads.append(thread)
 
-
-
-
-def check_user_tokens(users):
-    if not users:
-        print("No users configured. Exiting automation.")
-        print("Please check your settings and adjust.")
-        print("Starting menu...")
-        welcome()  # Call the welcome() function to handle the exception
-        return
-    
-    for user in users:
-        username = user['username']
-        user_token = user['token']
-        max_retries = 3  # Set your desired maximum retry count
-        retry_delay = 2  # Initial retry delay in seconds
-        retries = 0
-        #print(username)
-
-        while retries < max_retries:
-            url = f'https://metadata.provider.plex.tv/library/sections/watchlist/all?X-Plex-Container-Size=1&X-Plex-Token={user_token}'
-            try:
-                response = requests.get(url, timeout=24)  # Set an appropriate timeout value
-                response.raise_for_status()  # Raise an exception if the response has an error status code
-                break
-
-            except requests.exceptions.RequestException as req_err:
-                retries += 1
-                if max_retries - retries == 1:
-                    print(f"Request error for user {username}: {req_err}")
-
-                if retries < max_retries:
-                    if max_retries - retries == 1:
-                        print(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    retry_delay *= 2  # Exponential backoff
-                if retries == max_retries:
-                    print(f"Invalid Plex user token for user {username}: {user_token}")
-                    print("Please check your user settings.")
-                    print("Exiting automation.")
-                    print("")
-                    welcome()
-
-            except Exception as e:
-                print(f"Error processing user {username}: {e}")
-
-
-
-
-
-
-# Create a dictionary to hold the watching_check threads for each user
-watching_check_threads = {}
-
-
-def separate_watching_check_threads(user):
-    global watching_check_threads 
-    #print(f"Starting separate watching threads for {user}")
-
-    
-    username = user['username']
-        # Check if a thread is already running for this user
-    if username not in watching_check_threads or not watching_check_threads[username]['thread'].is_alive():
-        thread = threading.Thread(target=watching_check_thread, args=(user,))
-        thread.daemon = True
-        watching_check_threads[username] = {'thread': thread, 'watching_check_done': False}
-        #print("starting thread")
-        thread.start()
-    else:
-        #print(f"Thread already running for user {username}")
-        return
-
-    return watching_check_threads
-
-
-
-def watching_check_thread(user):
-    username = user['username']
-    while True:
-        result = watching_check.check_current_watching_sessions(user)
-        roundi = 1
-        #print(roundi)
-        roundi += 1
-        #print(result)
-        if result:
-            watching_check_threads[username]['watching_check_done'] = True
-            #print("watching check threads is true now")
-            #write_ignored.main()
-            plex_debrid_rclone_filter_updater.main(user)
-            break
-        else:
-            watching_check_threads[username]['watching_check_done'] = False
-
-        time.sleep(30)  # Adjust the sleep interval as needed
-
-
-
-def process_user(user):
-
-
-    if check_for_changes.check_for_added_titles(user, current_titles, previous_titles[user['username']]):
-        #print("added title recorgnized")
-        separate_watching_check_threads(user)
-        
-        write_ignored.main()
-        #plex_debrid_rclone_filter_updater.main(user)
-
-    elif check_for_changes.check_for_removed_titles(user, current_titles, previous_titles[user['username']]):
-        #print("removed title recorgnized")
-        write_ignored.main()
-
-    # Update previous titles
-    previous_titles[user['username']] = set(current_titles)
-
-
-def night_refresh(user):
-    schedule.every().day.at("03:00").do(plex_debrid_rclone_filter_updater.hardupdatefilterlist, user=user)
-
-
-def automation():
-    global plex_library
-    global users
-    global runned_check
-    global current_titles
-    global previous_titles
-    global watching_check_threads
-    first_iteration = True
-    runned_check = True
-
-    previous_titles = {user['username']: set() for user in users}
-    first_iteration = True  # Flag to track the first iteration
-    # Call the check_user_tokens function to validate user tokens
-    check_user_tokens(users)
-
-    night_refresh_done = 0
-  
-
-    ## running a main mount, for being able to access all files
-    print("Starting Rclone main-mount(s). ")
-    rclone_mainmount.main()
-    #time.sleep(3)
-    print("")
-
-    print("Running automation:")
-    print("")
-
-    start_printit_hello_thread()
-
-    while True:
-
-        if dt.datetime.now().hour == 2 and night_refresh_done == 1:
-            night_refresh_done = 0
-        if dt.datetime.now().hour == 3 and night_refresh_done == 0:
-            for user in users:
-                #plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
-                print("Nightly hard-refresh of filterlist for User: ", user['username'])
-                print("This also removes watched movies and shows if not already happened.")
-                plex_debrid_rclone_filter_updater.main(user)
-            night_refresh_done = 1
-
-
-        if first_iteration:
-            write_ignored.main()
-            for user in users:
-                # Schedule the hardupdatefilterlist task for this user
-                #schedule.every().day.at("03:00").do(plex_debrid_rclone_filter_updater.hardupdatefilterlist(user))
-                #night_refresh_threads = []
-                #night_refresh_thread = threading.Thread(target=night_refresh, args=(user,))
-                #night_refresh_thread.start()
-                #night_refresh_threads.append(night_refresh_thread)
-                current_titles = check_for_changes.fetch_watchlist_titles(plex_library, user)
-                if current_titles is not None:
-                    if check_for_changes.check_for_added_titles(user, current_titles, previous_titles[user['username']]):
-                        #print("added titles procedure: ")
-                        plex_debrid_rclone_filter_updater.main(user)
-                    elif check_for_changes.check_for_removed_titles(user, current_titles, previous_titles[user['username']]):
-                        #print("removed titles procedure")
-                        plex_debrid_rclone_filter_updater.main(user)
-
-                    # Update previous titles
-                    previous_titles[user['username']] = set(current_titles)
-
-            first_iteration = False  # Update the flag
-        
-
-        else:
-            for user in users:
-                time.sleep(2)
-                # Start separate watching_check threads for each user
-                #watching_check_threads = separate_watching_check_threads(user)
-                
-                current_titles = check_for_changes.fetch_watchlist_titles(plex_library, user)
-                if current_titles is not None:
-                    #print("start process user")
-                    
-                    process_user(user)
-
-        # Sleep for the specified interval before checking again
-        sleep_time = max(intervall - (len(users) * 2), 1)
-        time.sleep(sleep_time)
-
-
-def main():
-    global runned_check
-
-    welcome()
-
-    exit_event = threading.Event()
-
-    print("In 10 seconds returning back to home.")
-    time.sleep(10)
-    print("")
-    print("")
-    runned_check = True
-    global input_thread
-    global thread
- 
-    
-
-    main()
-   
-
-
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
 
 if __name__ == "__main__":
     main()
