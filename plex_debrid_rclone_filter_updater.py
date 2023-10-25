@@ -185,11 +185,11 @@ def hardupdatefilterlist(user):
     print(timestamp, "Nightly hard-refresh of filterlist for User: ", username)
     print("This also removes watched movies and shows if not already happened.")
     try:
-        updateprocess(plex_library, user)
+        main(user)
     except Exception:
         print("Update process failed, repeating in 90 seconds.")
         time.sleep(90)
-        hardupdatefilterlist(plex_library, user)
+        hardupdatefilterlist(user)
         
 
 

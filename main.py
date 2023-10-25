@@ -273,7 +273,10 @@ def automation():
             night_refresh_done = 0
         if dt.datetime.now().hour == 3 and night_refresh_done == 0:
             for user in users:
-                plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
+                #plex_debrid_rclone_filter_updater.hardupdatefilterlist(user)
+                print("Nightly hard-refresh of filterlist for User: ", user['username'])
+                print("This also removes watched movies and shows if not already happened.")
+                plex_debrid_rclone_filter_updater.main(user)
             night_refresh_done = 1
 
 
@@ -304,12 +307,10 @@ def automation():
         else:
             for user in users:
                 time.sleep(2)
-                # Start separate watching_check threads for each user
-                #watching_check_threads = separate_watching_check_threads(users)
                 
                 current_titles = check_for_changes.fetch_watchlist_titles(plex_library, user)
                 if current_titles is not None:
-                    
+                   
                     process_user(user)
 
         # Sleep for the specified interval before checking again
